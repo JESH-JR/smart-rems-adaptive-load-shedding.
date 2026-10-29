@@ -23,7 +23,7 @@
 
 ## System overview
 
-![Integrated Simulink model](04_results/figures_final/model_top.png)
+![Integrated Simulink model](figures_final/model_top.png)
 
 | Subsystem | Design |
 |---|---|
@@ -56,24 +56,24 @@
 
 <table>
 <tr>
-<td><img src="04_results/figures_final/fig02_pv_power_clear_vs_cloudy.png" alt="PV power, clear vs cloudy"></td>
-<td><img src="04_results/figures_final/fig05_pv_vs_demand.png" alt="PV generation vs demand"></td>
+<td><img src="figures_final/fig02_pv_power_clear_vs_cloudy.png" alt="PV power, clear vs cloudy"></td>
+<td><img src="figures_final/fig05_pv_vs_demand.png" alt="PV generation vs demand"></td>
 </tr>
 <tr>
 <td align="center">PV unit power on both days</td>
 <td align="center">Two-unit PV generation vs demand of 12 flats</td>
 </tr>
 <tr>
-<td><img src="04_results/figures_final/fig09_t4_clear_power.png" alt="Integrated power balance"></td>
-<td><img src="04_results/figures_final/fig17_t4_clear_vs_cloudy.png" alt="SoC and shedding, clear vs cloudy"></td>
+<td><img src="figures_final/fig09_t4_clear_power.png" alt="Integrated power balance"></td>
+<td><img src="figures_final/fig17_t4_clear_vs_cloudy.png" alt="SoC and shedding, clear vs cloudy"></td>
 </tr>
 <tr>
 <td align="center">24 h power balance with load shedding (clear day)</td>
 <td align="center">Battery SoC and Tier 3 shedding periods, both days</td>
 </tr>
 <tr>
-<td><img src="04_results/figures_final/fig11_t4_clear_dc_bus.png" alt="DC bus voltage"></td>
-<td><img src="04_results/figures_final/fig06_chb_voltage.png" alt="CHB inverter output"></td>
+<td><img src="figures_final/fig11_t4_clear_dc_bus.png" alt="DC bus voltage"></td>
+<td><img src="figures_final/fig06_chb_voltage.png" alt="CHB inverter output"></td>
 </tr>
 <tr>
 <td align="center">400 V DC bus over 24 h</td>
@@ -81,7 +81,7 @@
 </tr>
 </table>
 
-All 17 result figures (white background, 300 dpi) are in [`04_results/figures_final/`](04_results/figures_final/).
+All result figures (white background, 300 dpi) are in [`figures_final/`](figures_final/).
 
 ---
 
@@ -92,14 +92,12 @@ All 17 result figures (white background, 300 dpi) are in [`04_results/figures_fi
 │   ├── microgrid_top_fixed.slx   integrated microgrid (Tests 3 and 4)
 │   ├── PV_Unit_day.slx           one 19.2 kW PV unit with MPPT (Test 1)
 │   └── CHB_inverter_v2.slx       five-level CHB inverter (Test 2)
-├── 02_scripts/               init_microgrid.m (all parameters), test runners, plotting, figure export
+├── 02_scripts/               init_microgrid.m (all parameters), test runners and plotting
 ├── 03_data/                  NASA POWER weather (raw + processed pv_daily_profile.csv/.mat)
-├── 04_results/               results of every test + figures_final/ (report and PPT figures)
-├── 05_report/                final report (PDF + Overleaf source), review presentation
-├── 06_admin/                 SDG / PO / PSO mapping sheet
-├── Group14_RET_Model/        standalone package: unzip, run RUN_ALL.m, get all figures
-├── setup_paths.m             sets MATLAB paths and loads parameters
-└── CHANGELOG.md              development log
+├── 05_report/                final report (PDF + Overleaf source)
+├── figures_final/            all result figures
+├── test1_pv/                 Test 1 results, clear and partly cloudy day
+└── setup_paths.m             sets MATLAB paths and loads parameters
 ```
 
 ---
@@ -108,17 +106,6 @@ All 17 result figures (white background, 300 dpi) are in [`04_results/figures_fi
 
 **Requirements:** MATLAB **R2025a** with Simulink, Simscape Electrical (Specialized Power Systems) and Stateflow.
 
-**Quickest way** — use the standalone package:
-
-```matlab
-% unzip Group14_RET_Model/Group14_RET_Model.zip, open that folder in MATLAB
-RUN_ALL                 % runs every test and saves all figures to results\figures\ (30–60 min)
-RUN_ALL('pv')           % only Test 1
-RUN_ALL('inverter')     % only Test 2
-RUN_ALL('grid')         % only the 24 h integrated runs
-```
-
-**From this repository:**
 
 ```matlab
 cd <repo folder>
@@ -127,16 +114,13 @@ run_test1_pv('clear');  run_test1_pv('cloudy')                       % Test 1: P
 build_chb_inverter                                                   % Test 2: CHB inverter
 clear; out = sim('microgrid_top_fixed'); plot_test4(out,'clear_24h')                  % Tests 3+4, clear day
 clear; DAY = 'cloudy'; out = sim('microgrid_top_fixed'); plot_test4(out,'cloudy_24h') % Tests 3+4, cloudy day
-make_figures                                                         % final figures -> 04_results/figures_final
 ```
 
 ---
 
-## Report and presentation
+## Report
 
-- Final report (IEEE conference format): [`05_report/Group14_RET_Report_v2.pdf`](05_report/Group14_RET_Report_v2.pdf)
-- Overleaf source: [`05_report/Group14_RET_Report_Overleaf.zip`](05_report/Group14_RET_Report_Overleaf.zip)
-- Review presentation: [`05_report/presentation/`](05_report/presentation/)
+Final report (IEEE conference format): [`05_report/Group14_RET_Report_v2.pdf`](05_report/Group14_RET_Report_v2.pdf)
 
 ---
 
