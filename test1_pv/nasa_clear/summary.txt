@@ -1,0 +1,9 @@
+Weather: NASA POWER hourly, Coimbatore 11.02N 76.96E, clear day
+
+===== PV unit, 24 h =====
+Peak power   : 16.0 kW at 11:38
+Peak current : 83 A
+Noon voltage : 197 V
+Daily energy : 119.4 kWh (one unit), 238.9 kWh (two units)
+
+Saved: PPT_0_weather_input.png, PPT_1 ... PPT_5 (one per slide), PPT_PV_all_outputs.png
