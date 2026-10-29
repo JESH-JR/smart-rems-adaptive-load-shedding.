@@ -1,46 +1,155 @@
-# RET Project v2 - Smart Renewable Energy Management System with Adaptive Load Shedding
-**Group 14** | 23EEE335 Renewable Energy Technologies | Amrita School of Engineering, Coimbatore | **MATLAB R2025a**
+# Smart Renewable Energy Management System with Adaptive Load Shedding
 
-12 flats | PV 38.4 kW (2 x 19.2 kW) | Battery 240 V / 130 kWh | Supercapacitor 10 F / 250 V | 400 V DC bus | 5-level CHB inverter
+**MATLAB/Simulink solar microgrid for a 12-flat residential block** — 38.4 kW PV with MPPT, battery–supercapacitor storage on a 400 V DC bus, adaptive Stateflow load shedding and a five-level cascaded H-bridge inverter, validated over full days of real NASA POWER weather for Coimbatore, India.
 
-## Folder layout
-| Folder | What is inside |
+![MATLAB](https://img.shields.io/badge/MATLAB-R2025a-orange) ![Simulink](https://img.shields.io/badge/Simulink-Simscape%20Electrical-blue) ![Stateflow](https://img.shields.io/badge/Stateflow-load%20manager-green)
+
+> Course project — **23EEE335 Renewable Energy Technologies**, Department of EEE, Amrita School of Engineering, Coimbatore (Group 14)
+
+---
+
+## Team
+
+| Name | Roll number |
 |---|---|
-| `00_ARCHIVE_submitted/` | Exactly what was submitted on 27 Oct (PDF, LaTeX, model, synthetic weather). **Never edit.** |
-| `01_model/` | **The three working models:** `microgrid_top_fixed.slx` (integrated, R-equivalent loads), `PV_Unit_day.slx` (Test 1), `CHB_inverter_v2.slx` (Test 2) |
-| `01_model/_rebuild_source/` | Original `microgrid_top.slx`, only needed to rebuild the integrated model from scratch |
-| `01_model/_archive/` | Backups (pre-tidy, R2025b copy, RLC option, old R2026a inverter) and PV development models |
-| `02_scripts/` | Main scripts: `init_microgrid.m`, `run_test1_pv.m`, `plot_test4.m`, `build_chb_inverter.m`, `build_pv_profile_from_nasa.py` |
-| `02_scripts/model_fixes/` | The fix scripts in the order they were applied (see rebuild below) |
-| `02_scripts/rlc_option/` | Optional AC-side RLC load banks (not used in the final model) |
-| `02_scripts/pv/` | PV helper / plotting scripts |
-| `03_data/` | Weather input `pv_daily_profile.csv/.mat` (NASA POWER) + raw NASA files |
-| `04_results/` | One folder per test (final results + old submitted results); **`figures_final/` = clean white-background figures for PPT + report** (from `make_figures.m`); `_checks` and `_rlc_option` are side runs |
-| `05_report/` | `report_v2.tex`, figures, presentations |
-| `06_admin/` | SDG/PO/PSO mapping sheet |
-| `07_uploads/` | Folders already prepared for the OneDrive upload |
-| `_to_delete/` | MATLAB cache files moved out of the way - safe to delete |
+| Jeshnu Pranav G | CB.EN.U4EEE24118 |
+| Mellacheruvu Sada Siva Surya | CB.EN.U4EEE24128 |
+| Mohammed Nihal M | CB.EN.U4EEE24129 |
+| Thushar S | CB.EN.U4EEE24150 |
 
-## How to run (MATLAB R2025a)
-```matlab
-cd C:\RET\RET_Project_v2
-setup_paths                                   % paths + parameters
-run_test1_pv('clear'); run_test1_pv('cloudy') % Test 1: PV unit
-build_chb_inverter                            % Test 2: builds + tests the CHB inverter
-clear; out = sim('microgrid_top_fixed'); plot_test4(out,'clear_24h')                    % Test 4 clear day
-clear; DAY = 'cloudy'; out = sim('microgrid_top_fixed'); plot_test4(out,'cloudy_24h')   % Test 4 cloudy day
+**Guide:** Dr. C. P. Boopathy
+
+---
+
+## System overview
+
+![Integrated Simulink model](04_results/figures_final/model_top.png)
+
+| Subsystem | Design |
+|---|---|
+| Loads | 12 flats + common loads, appliance-level schedules in 3 priority tiers — 211.6 kWh/day (firm 117.8 kWh), evening peak 16.5 kW |
+| PV array | 2 × 19.2 kW units (6S × 8P, 400 W modules), boost converter, perturb & observe MPPT, curtailment at 98 % SoC with hysteresis to 95 % |
+| DC bus | 400 V, 25 mF DC link |
+| Battery | Li-ion 240 V / 130 kWh (541.7 Ah), SoC window 20–90 %, bidirectional DC–DC, ±156 A |
+| Supercapacitor | 10 F / 250 V, bidirectional DC–DC, ±200 A — handles fast power steps |
+| Energy management | Low-pass-filter power split: slow power → battery, fast power → supercapacitor; SoC-aware limits; PI bus-voltage loop with anti-windup |
+| Load manager | 4-state Stateflow chart (Normal → Shed Tier 3 → Critical only → Outage) with restore hysteresis, driven by battery SoC |
+| Inverter | 5-level CHB (2 × 200 V H-bridges), phase-shifted PWM (4 kHz effective), LC filter 2 mH / 20 µF (796 Hz) with 2 Ω damping |
+
+**Weather input:** NASA POWER hourly data, Coimbatore (11.02° N, 76.96° E) — clear day **9 May 2025** (7.32 kWh/m²) and partly cloudy day **16 May 2025** (4.65 kWh/m²), interpolated to 1-minute resolution.
+
+**Time compression:** a full 24-hour day is simulated in 2.88 s (1 real hour = 0.12 s) in the integrated model, and in 1.2 s in the PV unit model.
+
+---
+
+## Results
+
+| Test | Clear day (9 May 2025) | Partly cloudy day (16 May 2025) |
+|---|---|---|
+| **1 — PV unit** (one 19.2 kW unit) | Peak 16.0 kW, 119.4 kWh/day | Peak 13.1 kW, 77.7 kWh/day |
+| **Energy balance** (two units vs 211.6 kWh demand) | 238.9 kWh — 113 % of demand | 155.3 kWh — 73 % of demand |
+| **2 — CHB inverter** (4.3 kW load) | 225.8 V rms, 19.1 A rms, voltage THD **0.13 %** up to the 50th harmonic (IEEE 519 limit 8 %) | — |
+| **3 + 4 — Integrated 24 h run**: DC bus | 392.6–413.9 V | 395.7–406.9 V |
+| Load shedding (Tier 3 only) | 03:40 → 09:20 | 03:40 → 10:11 |
+| Critical and essential loads | Never interrupted | Never interrupted |
+| Battery SoC | 80 % → min ≈ 32 % → 98 % → 39.1 % | 80 % → min ≈ 30 % → 98 % → 38.3 % |
+
+<table>
+<tr>
+<td><img src="04_results/figures_final/fig02_pv_power_clear_vs_cloudy.png" alt="PV power, clear vs cloudy"></td>
+<td><img src="04_results/figures_final/fig05_pv_vs_demand.png" alt="PV generation vs demand"></td>
+</tr>
+<tr>
+<td align="center">PV unit power on both days</td>
+<td align="center">Two-unit PV generation vs demand of 12 flats</td>
+</tr>
+<tr>
+<td><img src="04_results/figures_final/fig09_t4_clear_power.png" alt="Integrated power balance"></td>
+<td><img src="04_results/figures_final/fig17_t4_clear_vs_cloudy.png" alt="SoC and shedding, clear vs cloudy"></td>
+</tr>
+<tr>
+<td align="center">24 h power balance with load shedding (clear day)</td>
+<td align="center">Battery SoC and Tier 3 shedding periods, both days</td>
+</tr>
+<tr>
+<td><img src="04_results/figures_final/fig11_t4_clear_dc_bus.png" alt="DC bus voltage"></td>
+<td><img src="04_results/figures_final/fig06_chb_voltage.png" alt="CHB inverter output"></td>
+</tr>
+<tr>
+<td align="center">400 V DC bus over 24 h</td>
+<td align="center">Five-level CHB inverter output</td>
+</tr>
+</table>
+
+All 17 result figures (white background, 300 dpi) are in [`04_results/figures_final/`](04_results/figures_final/).
+
+---
+
+## Repository structure
+
 ```
-Weather: NASA POWER hourly, Coimbatore 11.02 N 76.96 E - clear 9 May 2025, partly cloudy 16 May 2025.
-Time compression: 1 real hour = 0.12 s (integrated model), 0.05 s (PV unit model).
+├── 01_model/                 Simulink models
+│   ├── microgrid_top_fixed.slx   integrated microgrid (Tests 3 and 4)
+│   ├── PV_Unit_day.slx           one 19.2 kW PV unit with MPPT (Test 1)
+│   └── CHB_inverter_v2.slx       five-level CHB inverter (Test 2)
+├── 02_scripts/               init_microgrid.m (all parameters), test runners, plotting, figure export
+├── 03_data/                  NASA POWER weather (raw + processed pv_daily_profile.csv/.mat)
+├── 04_results/               results of every test + figures_final/ (report and PPT figures)
+├── 05_report/                final report (PDF + Overleaf source), review presentation
+├── 06_admin/                 SDG / PO / PSO mapping sheet
+├── Group14_RET_Model/        standalone package: unzip, run RUN_ALL.m, get all figures
+├── setup_paths.m             sets MATLAB paths and loads parameters
+└── CHANGELOG.md              development log
+```
 
-## Final results
-| Test | Result |
-|---|---|
-| 1 PV unit (clear / cloudy) | peak 16.0 / 13.1 kW; 119.4 / 77.7 kWh per unit; 238.9 / 155.3 kWh for 2 units |
-| 2 CHB inverter (new) | 225.8 V rms, 4.32 kW; peak 325.7 V (was 505 V); THD_v 0.13 % (to 50th), 1.57 % (to 10 kHz) |
-| 4 Integrated, clear day | bus 392.6-413.9 V; shedding L=1 03:40-09:20; SoC min ~34 %, 98 % at 12:30, curtailment with 95-98 % hysteresis; no L2/L3 |
-| 4 Integrated, cloudy day | bus 395.7-406.9 V; L=1 03:40-10:15; SoC max ~98 % at 15:00; ends 38.3 %; no L2/L3 |
+---
 
-## Rebuilding the integrated model from scratch (only if needed)
-`02_scripts/model_fixes/` in this order: `fix_microgrid_model_v2` (runs v1 internally) -> `v2b` -> `v2c` -> `v2d` -> `v2e` -> `v2f` -> `v2g` -> `v2h`
--> `tidy_microgrid_model` -> `fix_pv_curtailment_hysteresis`. Every change is explained in `CHANGELOG.md`.
+## How to run
+
+**Requirements:** MATLAB **R2025a** with Simulink, Simscape Electrical (Specialized Power Systems) and Stateflow.
+
+**Quickest way** — use the standalone package:
+
+```matlab
+% unzip Group14_RET_Model/Group14_RET_Model.zip, open that folder in MATLAB
+RUN_ALL                 % runs every test and saves all figures to results\figures\ (30–60 min)
+RUN_ALL('pv')           % only Test 1
+RUN_ALL('inverter')     % only Test 2
+RUN_ALL('grid')         % only the 24 h integrated runs
+```
+
+**From this repository:**
+
+```matlab
+cd <repo folder>
+setup_paths                                                          % paths + parameters
+run_test1_pv('clear');  run_test1_pv('cloudy')                       % Test 1: PV unit
+build_chb_inverter                                                   % Test 2: CHB inverter
+clear; out = sim('microgrid_top_fixed'); plot_test4(out,'clear_24h')                  % Tests 3+4, clear day
+clear; DAY = 'cloudy'; out = sim('microgrid_top_fixed'); plot_test4(out,'cloudy_24h') % Tests 3+4, cloudy day
+make_figures                                                         % final figures -> 04_results/figures_final
+```
+
+---
+
+## Report and presentation
+
+- Final report (IEEE conference format): [`05_report/Group14_RET_Report_v2.pdf`](05_report/Group14_RET_Report_v2.pdf)
+- Overleaf source: [`05_report/Group14_RET_Report_Overleaf.zip`](05_report/Group14_RET_Report_Overleaf.zip)
+- Review presentation: [`05_report/presentation/`](05_report/presentation/)
+
+---
+
+## Limitations and future work
+
+- Time compression books millisecond start-up transients as real hours (about 7 % SoC at the start of each run).
+- Each day starts from an assumed 80 % SoC; a multi-day run is needed to find the periodic operating point.
+- The integrated model represents the inverter and loads as an equivalent resistive DC load; reactive (RLC) loads and the isolated DC–DC stages of a physical CHB inverter are future work.
+- Hourly weather data smooths out fast cloud transients.
+- Next steps: multi-day runs, scheduling deferrable loads into the midday surplus, and hardware validation.
+
+---
+
+## Data source
+
+NASA Langley Research Center, *Prediction Of Worldwide Energy Resources (POWER)* project — hourly all-sky irradiance and 2 m air temperature. <https://power.larc.nasa.gov>
