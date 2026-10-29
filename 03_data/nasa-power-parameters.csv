@@ -1,0 +1,4 @@
+ID,Name,Tags,Services,Availability,Description,Alternates,Keywords,Warnings
+ALLSKY_SFC_SW_DWN_HR,All Sky Surface Shortwave Downward Irradiance (Hour-Based Parameter Set),"official,radiation","api,dav","monthly,annual,climatology",This is a API only data parameter listing to provide a set of data parameters.,,Solar Fluxes and Related,
+ALLSKY_SFC_SW_DWN_HR_MAX,Climatological Maximum All Sky Surface Shortwave Downward Irradiance (Hour-Based Parameter Set),"official,radiation",api,"monthly,annual,climatology",This is a API only data parameter listing to provide a set of data parameters.,,,
+ALLSKY_SFC_SW_DWN_HR_MIN,Climatological Minimum All Sky Surface Shortwave Downward Irradiance (Hour-Based Parameter Set),"official,radiation",api,"monthly,annual,climatology",This is a API only data parameter listing to provide a set of data parameters.,,,
